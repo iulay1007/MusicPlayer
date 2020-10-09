@@ -15,52 +15,43 @@
     >
     <ImageView
        android:layout_marginTop="100dp"
-       android:layout_width="400dp"
-       android:layout_height="400dp"
+       android:layout_width="match_parent"
+       android:layout_height="0dp"
+        android:layout_weight="1"
        android:background="@drawable/ic_baseline_toys_24"/>
     <LinearLayout
-        android:layout_marginTop="120dp"
+        android:layout_marginTop="100dp"
         android:layout_width="match_parent"
         android:orientation="horizontal"
         android:gravity="center"
-        android:layout_height="130dp">
+        android:layout_height="0dp"
+        android:layout_weight="0.5">
 
-        <ImageView
+        <Button
             android:layout_gravity="center"
             android:layout_width="0dp"
+            android:layout_marginLeft="5dp"
+
             android:layout_height="70dp"
-            android:layout_weight="0.3"
+            android:layout_weight="0.5"
             tools:ignore="Suspicious0dp"
             android:background="@drawable/ic_baseline_favorite_24"
             android:rotation="90"/>
-        <ImageView
-            android:layout_gravity="center"
-            android:layout_width="0dp"
-            android:layout_height="70dp"
-            android:layout_weight="0.3"
-            tools:ignore="Suspicious0dp"
-            android:background="@drawable/ic_baseline_favorite_24"
-            android:rotation="90"/>
+
         <Button
             android:id="@+id/play_btn"
-        android:layout_width="10dp"
+        android:layout_width="0dp"
         android:layout_height="170dp"
         android:layout_weight="1"
         tools:ignore="Suspicious0dp"
             android:background="@drawable/ic_baseline_favorite_24"/>
-        <ImageView
+
+        <Button
             android:layout_gravity="center"
             android:layout_width="0dp"
             android:layout_height="70dp"
-            android:layout_weight="0.3"
-            tools:ignore="Suspicious0dp"
-            android:background="@drawable/ic_baseline_favorite_24"
-            android:rotation="270"/>
-        <ImageView
-            android:layout_gravity="center"
-            android:layout_width="0dp"
-            android:layout_height="70dp"
-            android:layout_weight="0.3"
+            android:layout_weight="0.5"
+            android:layout_marginRight="5dp"
             tools:ignore="Suspicious0dp"
             android:background="@drawable/ic_baseline_favorite_24"
             android:rotation="270"/>

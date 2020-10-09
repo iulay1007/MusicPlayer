@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private MediaPlayer player;
     private ServiceConnection conn;
     private MusicService musicService;
+    private MusicService.MyBinder myBinder;
 
 
     private Button play_btn;
@@ -47,11 +48,28 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         checkPermission();
-        initPlayer();
         initSong();
+        initPlayer();
+
     }
 
     private void initPlayer() {
+
+
+        conn=new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+                // musicService=((MusicService.MyBinder)(iBinder)).getService();
+                myBinder = (MusicService.MyBinder) iBinder;
+
+
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName componentName) {
+                musicService=null;
+            }
+        };
 
 
         play_btn=(Button)findViewById(R.id.play_btn);
@@ -59,29 +77,20 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
+                Intent intent=new Intent(MainActivity.this,MusicService.class);
+
+                startService(intent);
+                bindService(intent,conn,BIND_AUTO_CREATE);
+
+                if(myBinder!=null)
+                myBinder.play();
+
             }
         });
 
       //  MusicService.MyBinder myBinder=(MusicService.MyBinder) binder;
 
-        Intent intent=new Intent(MainActivity.this,MusicService.class);
-        startService(intent);
-        bindService(intent,conn,BIND_AUTO_CREATE);
 
-
-
-        conn=new ServiceConnection() {
-            @Override
-            public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            musicService=((MusicService.MyBinder)(iBinder)).getService();
-
-            }
-
-            @Override
-            public void onServiceDisconnected(ComponentName componentName) {
-            musicService=null;
-            }
-        };
 
     }
 
