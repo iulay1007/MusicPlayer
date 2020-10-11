@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
     tools:context=".MainActivity"
-    android:background="#CBB8E1">
+    android:background="#F4E2E2">
 <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -26,7 +26,15 @@
         android:gravity="center"
         android:layout_height="0dp"
         android:layout_weight="0.5">
+        <ImageView
+            android:layout_gravity="center"
+            android:layout_width="0dp"
+            android:layout_height="70dp"
+            android:layout_weight="0.3"
+            android:layout_marginRight="5dp"
+            tools:ignore="Suspicious0dp"
 
+            />
         <Button
             android:layout_gravity="center"
             android:layout_width="0dp"
@@ -41,8 +49,8 @@
         <Button
             android:id="@+id/play_btn"
         android:layout_width="0dp"
-        android:layout_height="170dp"
-        android:layout_weight="1"
+        android:layout_height="120dp"
+        android:layout_weight="0.7"
         tools:ignore="Suspicious0dp"
             android:background="@drawable/ic_baseline_favorite_24"/>
 
@@ -55,6 +63,17 @@
             tools:ignore="Suspicious0dp"
             android:background="@drawable/ic_baseline_favorite_24"
             android:rotation="270"/>
+        <Button
+            android:id="@+id/change_btn"
+            android:layout_gravity="center"
+            android:layout_width="0dp"
+            android:layout_height="70dp"
+            android:layout_weight="0.3"
+            android:layout_marginRight="5dp"
+            tools:ignore="Suspicious0dp"
+            android:background="@drawable/ic_baseline_queue_music_24"
+          />
+
 
 
     </LinearLayout>

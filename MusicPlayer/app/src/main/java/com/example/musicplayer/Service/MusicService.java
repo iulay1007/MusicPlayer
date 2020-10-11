@@ -40,7 +40,7 @@ public class MusicService extends Service {
 
 
 
-       //    player.start();
+         player.start();
             Log.d("qwq","start");
         } catch (IOException e) {
             e.printStackTrace();

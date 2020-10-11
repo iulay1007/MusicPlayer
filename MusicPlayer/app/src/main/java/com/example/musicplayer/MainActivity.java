@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private Button play_btn;
+    private Button change_btn;
 
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -73,6 +74,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         play_btn=(Button)findViewById(R.id.play_btn);
+        change_btn=(Button)findViewById(R.id.change_btn);
+
         play_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -84,6 +87,15 @@ public class MainActivity extends AppCompatActivity {
 
                 if(myBinder!=null)
                 myBinder.play();
+
+            }
+        });
+        change_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent=new Intent(MainActivity.this,MainActivity2.class);
+                startActivity(intent);
+
 
             }
         });
