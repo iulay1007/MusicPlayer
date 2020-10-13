@@ -22,7 +22,6 @@ public class MusicService extends Service {
         return new MyBinder();
     }
 
-
     @Override
     public void onCreate() {
         super.onCreate();
