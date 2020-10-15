@@ -1,26 +1,29 @@
 package com.example.musicplayer;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.media.MediaParser;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.musicplayer.Bean.MusicBean;
 import com.example.musicplayer.Service.MusicService;
@@ -36,10 +39,40 @@ public class MainActivity extends AppCompatActivity {
     private ServiceConnection conn;
     private MusicService musicService;
     private MusicService.MyBinder myBinder;
+    public static List<MusicBean> musicBeans=new ArrayList<>();
 
-
+    private TextView textView;
     private Button play_btn;
     private Button change_btn;
+    private final static int SCAN_OK=1;
+    @SuppressLint("HandlerLeak")
+
+    private Handler mHandler = new Handler() {
+
+
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+
+            switch (msg.what) {
+                case SCAN_OK:
+                    Log.d(TAG,"handlermsg");
+
+
+                    textView.setText(musicBeanList.get(1).getName());
+                    //  MediaApplication.getInstance().setPhotoList(imageBeanList);
+              //      recyclerviewAdapter.setData(musicBeans);
+
+             //       recyclerviewAdapter.notifyDataSetChanged();
+
+                    Log.d(TAG,"handlermsg");
+                    break;
+                default:Log.d(TAG,"handler_error");
+            }
+        }
+
+    };
+
 
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -47,12 +80,24 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        initView();
+
 
         checkPermission();
         initSong();
         initPlayer();
 
     }
+
+    private void initView() {
+        textView=(TextView)findViewById(R.id.tv_music_name);
+       // if(position_song!=0){
+
+      //  if(musicBeanList!=null)
+         //
+      //  }
+    }
+
 
     private void initPlayer() {
 
@@ -130,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
             Log.d(TAG,"qwq");
-         //   mHandler.sendEmptyMessage(SCAN_OK);
+         mHandler.sendEmptyMessage(SCAN_OK);
             mCursor.close();
 
 

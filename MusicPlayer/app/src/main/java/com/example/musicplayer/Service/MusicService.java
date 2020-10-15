@@ -10,8 +10,8 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 import java.io.IOException;
-import java.security.Provider;
 
+import static com.example.musicplayer.Adapter.RecyclerviewAdapter.position_song;
 import static com.example.musicplayer.MainActivity.musicBeanList;
 
 public class MusicService extends Service {
@@ -33,7 +33,10 @@ public class MusicService extends Service {
      //   player = new MediaPlayer();
 
         try {
-            player.setDataSource("/storage/emulated/0/Huawei/CloudClone/SDCardClone/音乐/에이핑크 (Apink) - U You (Korean Ver.) [mqms2].mp3");
+
+           // player.setDataSource("/storage/emulated/0/Huawei/CloudClone/SDCardClone/音乐/에이핑크 (Apink) - U You (Korean Ver.) [mqms2].mp3");
+           player.setDataSource(musicBeanList.get(position_song).getData());
+
             //准备资源
             player.prepare();
 
