@@ -59,6 +59,7 @@
 
             />
         <Button
+            android:id="@+id/playprv_btn"
             android:layout_gravity="center"
             android:layout_width="0dp"
             android:layout_marginLeft="5dp"
@@ -78,6 +79,8 @@
             android:background="@drawable/ic_baseline_favorite_24"/>
 
         <Button
+            android:id="@+id/playnext_btn"
+
             android:layout_gravity="center"
             android:layout_width="0dp"
             android:layout_height="70dp"

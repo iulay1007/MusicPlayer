@@ -28,10 +28,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.musicplayer.Bean.MusicBean;
 import com.example.musicplayer.Service.MusicService;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     public static int PERMISSION_REQUEST_CODE=1;
     public static List<MusicBean> musicBeanList=new ArrayList<>();
     private static String TAG="MainActivity";
@@ -44,7 +45,11 @@ public class MainActivity extends AppCompatActivity {
     private TextView textView;
     private Button play_btn;
     private Button change_btn;
+    private Button playprv_btn;
+    private Button playnext_btn;
     private final static int SCAN_OK=1;
+    private final static int getintent=2;
+    private int p;
     @SuppressLint("HandlerLeak")
 
     private Handler mHandler = new Handler() {
@@ -59,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG,"handlermsg");
 
 
-                    textView.setText(musicBeanList.get(1).getName());
+                   // textView.setText(musicBeanList.get(1).getName());
                     //  MediaApplication.getInstance().setPhotoList(imageBeanList);
               //      recyclerviewAdapter.setData(musicBeans);
 
@@ -67,6 +72,10 @@ public class MainActivity extends AppCompatActivity {
 
                     Log.d(TAG,"handlermsg");
                     break;
+                case getintent:
+
+             textView.setText(musicBeanList.get(p).getName());
+
                 default:Log.d(TAG,"handler_error");
             }
         }
@@ -90,7 +99,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initView() {
+
         textView=(TextView)findViewById(R.id.tv_music_name);
+
+        playprv_btn=(Button)findViewById(R.id.playprv_btn);
+        playnext_btn=(Button)findViewById(R.id.playnext_btn);
+        play_btn=(Button)findViewById(R.id.play_btn);
+        change_btn=(Button)findViewById(R.id.change_btn);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+             //   Intent intent=getIntent();
+           //   p=intent.getIntExtra("p",0);
+            //   mHandler.sendEmptyMessage(getintent);
+
+                //    while (p!=0)
+               //     textView.setText(musicBeanList.get(p).getName());
+            }
+        }).start();
+
+      // int p= getIntent();
        // if(position_song!=0){
 
       //  if(musicBeanList!=null)
@@ -118,10 +147,12 @@ public class MainActivity extends AppCompatActivity {
         };
 
 
-        play_btn=(Button)findViewById(R.id.play_btn);
-        change_btn=(Button)findViewById(R.id.change_btn);
 
-        play_btn.setOnClickListener(new View.OnClickListener() {
+        play_btn.setOnClickListener(this);
+        playnext_btn.setOnClickListener(this);
+        playprv_btn.setOnClickListener(this);
+        change_btn.setOnClickListener(this);
+     /*   play_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
@@ -130,12 +161,39 @@ public class MainActivity extends AppCompatActivity {
                 startService(intent);
                 bindService(intent,conn,BIND_AUTO_CREATE);
 
-                if(myBinder!=null)
-                myBinder.play();
+                if(myBinder!=null) {
+
+                        myBinder.playinmain();
+
+                }
 
             }
-        });
-        change_btn.setOnClickListener(new View.OnClickListener() {
+        });*/
+
+
+      /*  playnext_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                  if(myBinder!=null)
+                        myBinder.playnext();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });*/
+     /*   playprv_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                     if(myBinder!=null)
+                    myBinder.playprv();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });*/
+    /*    change_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent=new Intent(MainActivity.this,MainActivity2.class);
@@ -144,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
+*/
       //  MusicService.MyBinder myBinder=(MusicService.MyBinder) binder;
 
 
@@ -175,7 +233,11 @@ public class MainActivity extends AppCompatActivity {
 
             }
             Log.d(TAG,"qwq");
+
          mHandler.sendEmptyMessage(SCAN_OK);
+            Intent intent=getIntent();
+            p=intent.getIntExtra("p",0);
+            mHandler.sendEmptyMessage(getintent);
             mCursor.close();
 
 
@@ -209,4 +271,41 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.play_btn:
+                Intent intent=new Intent(MainActivity.this,MusicService.class);
+
+                startService(intent);
+                bindService(intent,conn,BIND_AUTO_CREATE);
+
+                if(myBinder!=null) {
+
+                    myBinder.playinmain();
+
+                }
+                break;
+            case R.id.playnext_btn:
+                try {
+                if(myBinder!=null)
+                    myBinder.playnext();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+                break;
+            case R.id.playprv_btn:    try {
+                if(myBinder!=null)
+                    myBinder.playprv();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            break;
+            case R.id.change_btn:
+                Intent intent1=new Intent(MainActivity.this,MainActivity2.class);
+                startActivity(intent1);
+                break;
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package com.example.musicplayer.Service;
 
+import android.app.Notification;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -15,6 +16,7 @@ import static com.example.musicplayer.Adapter.RecyclerviewAdapter.position_song;
 import static com.example.musicplayer.MainActivity.musicBeanList;
 
 public class MusicService extends Service {
+    public Notification notification;
     public MediaPlayer player=new MediaPlayer();
     @Nullable
     @Override
@@ -34,6 +36,7 @@ public class MusicService extends Service {
 
         try {
 
+
            // player.setDataSource("/storage/emulated/0/Huawei/CloudClone/SDCardClone/音乐/에이핑크 (Apink) - U You (Korean Ver.) [mqms2].mp3");
            player.setDataSource(musicBeanList.get(position_song).getData());
 
@@ -49,7 +52,11 @@ public class MusicService extends Service {
         }
         Log.e("服务", "准备播放音乐");
     }
+public void creatNotification(){
+notification=new Notification();
 
+
+}
     //该方法包含关于歌曲的操作
     public class MyBinder extends Binder {
         public MusicService getService(){
@@ -64,15 +71,52 @@ public class MusicService extends Service {
         }
 
         //播放或暂停歌曲
-        public void play() {
+        public void play() throws IOException {
+          //  if (!player.isPlaying()) {
+                player.pause();
+                player = new MediaPlayer();
+                player.setDataSource(musicBeanList.get(position_song).getData());
+                player.prepare();
+
+
+                player.start();
+                //   } else {
+                //      player.pause();
+                //    }
+                //Log.e("服务", "播放音乐");
+            //}
+        }
+
+        public void playinmain(){
             if (!player.isPlaying()) {
                 player.start();
             } else {
                 player.pause();
             }
-            Log.e("服务", "播放音乐");
         }
+        public void playnext() throws IOException{
+            player.pause();
+            player=new MediaPlayer();
+            position_song++;
+            player.setDataSource(musicBeanList.get(position_song).getData());
+            player.prepare();
 
+
+            player.start();
+
+        }
+        public void playprv() throws IOException{
+            player.pause();
+            player=new MediaPlayer();
+            if(position_song!=0)
+            position_song--;
+            player.setDataSource(musicBeanList.get(position_song).getData());
+            player.prepare();
+
+
+            player.start();
+
+        }
        /* public void playMusic() {
             if(player==null)
                 player = new MediaPlayer();
