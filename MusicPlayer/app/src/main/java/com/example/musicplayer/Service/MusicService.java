@@ -2,6 +2,7 @@ package com.example.musicplayer.Service;
 
 import android.app.Notification;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Binder;
@@ -45,14 +46,16 @@ public class MusicService extends Service {
 
 
 
-         player.start();
+     //   player.start();
             Log.d("qwq","start");
         } catch (IOException e) {
             e.printStackTrace();
         }
         Log.e("服务", "准备播放音乐");
     }
-public void creatNotification(){
+
+
+    public void creatNotification(){
 notification=new Notification();
 
 
@@ -79,7 +82,7 @@ notification=new Notification();
                 player.prepare();
 
 
-                player.start();
+              player.start();
                 //   } else {
                 //      player.pause();
                 //    }
@@ -88,10 +91,16 @@ notification=new Notification();
         }
 
         public void playinmain(){
-            if (!player.isPlaying()) {
-                player.start();
-            } else {
+            position_song++;
+            Intent intent=new Intent("action.playmusic");
+            intent.putExtra("position",position_song);
+            //intent.setClassName(new ComponentName("com.example.musicplayer","MainActivity$BroadcastReceiverinMain"));
+            intent.setComponent(new ComponentName("com.example.musicplayer","com.example.musicplayerB.roadcastReceiverinMain"));
+            sendBroadcast(intent);
+            if (player.isPlaying()) {
                 player.pause();
+            } else {
+                player.start();
             }
         }
         public void playnext() throws IOException{

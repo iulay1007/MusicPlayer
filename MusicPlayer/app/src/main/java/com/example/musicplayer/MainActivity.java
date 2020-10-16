@@ -2,10 +2,15 @@ package com.example.musicplayer;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.media.MediaPlayer;
@@ -19,16 +24,20 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RemoteViews;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
 
 import com.example.musicplayer.Bean.MusicBean;
 import com.example.musicplayer.Service.MusicService;
+import com.example.musicplayer.utils.NotificationsUtils;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private MusicService.MyBinder myBinder;
     public static List<MusicBean> musicBeans=new ArrayList<>();
 
-    private TextView textView;
+    public TextView textView;
     private Button play_btn;
     private Button change_btn;
     private Button playprv_btn;
@@ -50,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final static int SCAN_OK=1;
     private final static int getintent=2;
     private int p;
+    private RemoteViews remoteViews;
     @SuppressLint("HandlerLeak")
 
     private Handler mHandler = new Handler() {
@@ -83,49 +93,87 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     };
 
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initView();
-
-
         checkPermission();
+        isNotifyEnabled(this);
         initSong();
         initPlayer();
+        showNotification();
 
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void showNotification() {
+        String channelId = "default";
+        String channelName = "默认通知";
+        NotificationManager notificationManager=(NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+   remoteViews=new RemoteViews(getPackageName(),R.layout.notification_layout);
+      NotificationChannel channel = new NotificationChannel(
+                getPackageName(),
+                "会话消息()",
+                NotificationManager.IMPORTANCE_DEFAULT
+
+        );
+        notificationManager.createNotificationChannel(new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH));
+
+        notificationManager.createNotificationChannel(channel);
+        NotificationCompat.Builder builder=new NotificationCompat.Builder(this,channelId).setSmallIcon(R.drawable.ic_baseline_favorite_24)
+                .setContentTitle("title").setContentText("Content").setChannelId(getPackageName()) .setPriority(NotificationCompat.PRIORITY_HIGH);
+      builder.setContent(remoteViews).setSmallIcon(R.drawable.ic_baseline_favorite_24);
+
+
+        notificationManager.notify(1,builder.build());
+
+    }
+    public  boolean isNotifyEnabled(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return isEnableV26(context);
+        }
+        return false;
+    }
+
+    private static boolean isEnableV26(Context context) {
+        ApplicationInfo appInfo = context.getApplicationInfo();
+        String pkg = context.getApplicationContext().getPackageName();
+        int uid = appInfo.uid;
+        try {
+            NotificationManager notificationManager = (NotificationManager)
+                    context.getSystemService(Context.NOTIFICATION_SERVICE);
+            Method sServiceField = notificationManager.getClass().getDeclaredMethod("getService");
+            sServiceField.setAccessible(true);
+            Object sService = sServiceField.invoke(notificationManager);
+
+            Method method = sService.getClass().getDeclaredMethod("areNotificationsEnabledForPackage"
+                    , String.class, Integer.TYPE);
+            method.setAccessible(true);
+            return (boolean) method.invoke(sService, pkg, uid);
+        } catch (Exception e) {
+            return true;
+        }
     }
 
     private void initView() {
 
-        textView=(TextView)findViewById(R.id.tv_music_name);
+        textView = (TextView) findViewById(R.id.tv_music_name);
 
-        playprv_btn=(Button)findViewById(R.id.playprv_btn);
-        playnext_btn=(Button)findViewById(R.id.playnext_btn);
-        play_btn=(Button)findViewById(R.id.play_btn);
-        change_btn=(Button)findViewById(R.id.change_btn);
+        playprv_btn = (Button) findViewById(R.id.playprv_btn);
+        playnext_btn = (Button) findViewById(R.id.playnext_btn);
+        play_btn = (Button) findViewById(R.id.play_btn);
+        change_btn = (Button) findViewById(R.id.change_btn);
+        play_btn.setOnClickListener(this);
+        playnext_btn.setOnClickListener(this);
+        playprv_btn.setOnClickListener(this);
+        change_btn.setOnClickListener(this);
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-             //   Intent intent=getIntent();
-           //   p=intent.getIntExtra("p",0);
-            //   mHandler.sendEmptyMessage(getintent);
 
-                //    while (p!=0)
-               //     textView.setText(musicBeanList.get(p).getName());
-            }
-        }).start();
-
-      // int p= getIntent();
-       // if(position_song!=0){
-
-      //  if(musicBeanList!=null)
-         //
-      //  }
     }
+
 
 
     private void initPlayer() {
@@ -147,63 +195,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         };
 
 
+        Intent intent=new Intent(MainActivity.this,MusicService.class);
 
-        play_btn.setOnClickListener(this);
-        playnext_btn.setOnClickListener(this);
-        playprv_btn.setOnClickListener(this);
-        change_btn.setOnClickListener(this);
-     /*   play_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                Intent intent=new Intent(MainActivity.this,MusicService.class);
-
-                startService(intent);
-                bindService(intent,conn,BIND_AUTO_CREATE);
-
-                if(myBinder!=null) {
-
-                        myBinder.playinmain();
-
-                }
-
-            }
-        });*/
-
-
-      /*  playnext_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                  if(myBinder!=null)
-                        myBinder.playnext();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });*/
-     /*   playprv_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                     if(myBinder!=null)
-                    myBinder.playprv();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });*/
-    /*    change_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent=new Intent(MainActivity.this,MainActivity2.class);
-                startActivity(intent);
-
-
-            }
-        });
-*/
-      //  MusicService.MyBinder myBinder=(MusicService.MyBinder) binder;
+        startService(intent);
+        bindService(intent,conn,BIND_AUTO_CREATE);
 
 
 
@@ -250,6 +245,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void checkPermission() {
+        if(!NotificationsUtils.isNotificationEnabled(this)) {
+            NotificationsUtils.openPush(this);
+        }
         int readExternalStoragePermissionResult = checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE);
         if(readExternalStoragePermissionResult != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},PERMISSION_REQUEST_CODE);
@@ -275,24 +273,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.play_btn:
-                Intent intent=new Intent(MainActivity.this,MusicService.class);
+              /*  Intent intent=new Intent(MainActivity.this,MusicService.class);
 
                 startService(intent);
-                bindService(intent,conn,BIND_AUTO_CREATE);
+                bindService(intent,conn,BIND_AUTO_CREATE);*/
 
                 if(myBinder!=null) {
 
                     myBinder.playinmain();
 
                 }
+
                 break;
             case R.id.playnext_btn:
-                try {
+              try {
                 if(myBinder!=null)
                     myBinder.playnext();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
 
                 break;
             case R.id.playprv_btn:    try {
@@ -308,4 +308,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
         }
     }
+    class BroadcastReceiverinMain extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            intent=getIntent();
+          int q=  intent.getIntExtra("position",0);
+          Log.d(TAG,"---onReceive");
+          textView.setText(musicBeanList.get(q).getName());
+
+
+
+        }
+    }
+
 }
