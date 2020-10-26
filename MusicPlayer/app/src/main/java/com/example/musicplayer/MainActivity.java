@@ -4,11 +4,11 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -33,6 +33,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 
 import com.example.musicplayer.Bean.MusicBean;
+import com.example.musicplayer.Broadcast.MyBroadcastReceiver;
 import com.example.musicplayer.Service.MusicService;
 import com.example.musicplayer.utils.NotificationsUtils;
 
@@ -56,6 +57,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button change_btn;
     private Button playprv_btn;
     private Button playnext_btn;
+    private IntentFilter intentFilter;
+    private MyBroadcastReceiver myReceiver;
     private final static int SCAN_OK=1;
     private final static int getintent=2;
     private int p;
@@ -105,6 +108,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initSong();
         initPlayer();
         showNotification();
+        intentFilter = new IntentFilter();
+        intentFilter.addAction("action_playmusic");
+        myReceiver = new MyBroadcastReceiver();
+        registerReceiver(myReceiver, intentFilter);
 
     }
 
@@ -273,6 +280,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.play_btn:
+
+                Intent intent=new Intent();
+                intent.setAction("action_playmusic");
+                intent.setComponent(new ComponentName("com.example.musicplayer.Broadcast","MyBroadcastReceiver"));
+                sendBroadcast(intent);
               /*  Intent intent=new Intent(MainActivity.this,MusicService.class);
 
                 startService(intent);
@@ -295,7 +307,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
                 break;
-            case R.id.playprv_btn:    try {
+            case R.id.playprv_btn:
+                try {
                 if(myBinder!=null)
                     myBinder.playprv();
             } catch (IOException e) {
@@ -308,7 +321,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
         }
     }
-    class BroadcastReceiverinMain extends BroadcastReceiver {
+  /*  class BroadcastReceiverinMain extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -320,6 +333,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
         }
-    }
+    }*/
+  @Override
+  protected void onDestroy() {
+      super.onDestroy();
+      unregisterReceiver(myReceiver);
+  }
 
 }

@@ -45,17 +45,7 @@
             android:name=".Service.MusicService"
             android:enabled="true"
             android:exported="true" />
-        <receiver android:name="com.example.musicplayer.MainActivity$BroadcastReceiverinMain"
-            android:enabled="true"
-            android:exported="true"
-            tools:ignore="Instantiatable">
-            <intent-filter>
-                <action
-                    android:name="action.playmusic"
-                    />
-            </intent-filter>
 
-        </receiver>
 
 
 

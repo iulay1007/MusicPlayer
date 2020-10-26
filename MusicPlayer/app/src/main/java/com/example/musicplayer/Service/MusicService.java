@@ -2,7 +2,6 @@ package com.example.musicplayer.Service;
 
 import android.app.Notification;
 import android.app.Service;
-import android.content.ComponentName;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Binder;
@@ -31,7 +30,7 @@ public class MusicService extends Service {
 
         if (player == null)
             //如果为空就new一个
-            player = new MediaPlayer();
+                player = new MediaPlayer();
         //这里只执行一次，用于准备播放器
      //   player = new MediaPlayer();
 
@@ -92,11 +91,11 @@ notification=new Notification();
 
         public void playinmain(){
             position_song++;
-            Intent intent=new Intent("action.playmusic");
-            intent.putExtra("position",position_song);
+           // Intent intent=new Intent("action.playmusic");
+            //intent.putExtra("position",position_song);
             //intent.setClassName(new ComponentName("com.example.musicplayer","MainActivity$BroadcastReceiverinMain"));
-            intent.setComponent(new ComponentName("com.example.musicplayer","com.example.musicplayerB.roadcastReceiverinMain"));
-            sendBroadcast(intent);
+            //intent.setComponent(new ComponentName("com.example.musicplayer","com.example.musicplayerB.roadcastReceiverinMain"));
+            //sendBroadcast(intent);
             if (player.isPlaying()) {
                 player.pause();
             } else {
