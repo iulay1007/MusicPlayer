@@ -1,13 +1,10 @@
 package com.example.musicplayer;
 
-import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -17,11 +14,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.musicplayer.Adapter.RecyclerviewAdapter;
+import com.example.musicplayer.EventBus.MyEventBus;
 import com.example.musicplayer.Service.MusicService;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.IOException;
 
-import static com.example.musicplayer.Adapter.RecyclerviewAdapter.position_song;
 import static com.example.musicplayer.MainActivity.musicBeanList;
 
 public class MainActivity2 extends AppCompatActivity {
@@ -32,77 +33,69 @@ public class MainActivity2 extends AppCompatActivity {
     private MusicService musicService;
     private final static int OK=1;
     private TextView textView;
-    private Button button;
-    @SuppressLint("HandlerLeak")
-
-    private Handler mHandler = new Handler() {
-
-
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-
-            switch (msg.what) {
-                case OK:
-                   // Log.d(TAG,"handlermsg");
+    private Button play_btn;
+    private Button play_next_btn;
+    public int second_position;
 
 
-                    textView.setText(musicBeanList.get(position_song).getName());
-                    //  MediaApplication.getInstance().setPhotoList(imageBeanList);
-                    //      recyclerviewAdapter.setData(musicBeans);
-
-                    //       recyclerviewAdapter.notifyDataSetChanged();
-
-                   // Log.d(TAG,"handlermsg");
-                    break;
-               // default:Log.d(TAG,"handler_error");
-            }
-        }
-
-    };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.list);
         initView();
+        Intent intent = new Intent(MainActivity2.this, MusicService.class);
+        startService(intent);
+        bindService(intent, conn, BIND_AUTO_CREATE);
+
+        EventBus.getDefault().register(this);
 
     }
     private void initView() {
         recyclerView = findViewById(R.id.image_list_view);
 
         textView=findViewById(R.id.tv);
-        button=findViewById(R.id.play);
-        // recyclerviewAdapter;
+        play_btn=findViewById(R.id.play);
+        play_next_btn=findViewById(R.id.play_next);
+   //textview点击跳转
         textView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent=new Intent(MainActivity2.this,MainActivity.class);
-                intent.putExtra("p",position_song);
                 startActivity(intent);
             }
         });
-        button.setOnClickListener(new View.OnClickListener() {
+        //播放/暂停
+        play_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 myBinder.playinmain();
             }
         });
+        play_next_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    if (myBinder != null)
+                    myBinder.playnext();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
         recyclerView.setAdapter(recyclerviewAdapter=new RecyclerviewAdapter());
-
         recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity2.this, LinearLayoutManager.VERTICAL,false));
 
 
         if(musicBeanList!=null)
         recyclerviewAdapter.setData(musicBeanList);
+
+
         conn=new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-                // musicService=((MusicService.MyBinder)(iBinder)).getService();
+
                 myBinder = (MusicService.MyBinder) iBinder;
-
-
             }
-
             @Override
             public void onServiceDisconnected(ComponentName componentName) {
                 musicService=null;
@@ -112,12 +105,14 @@ public class MainActivity2 extends AppCompatActivity {
         recyclerviewAdapter.setOnItemClickListener(new RecyclerviewAdapter.ItemClickListener() {
             @Override
             public void onItemClick(int position, RecyclerviewAdapter.ViewHolder holder) {
-             // Toast.makeText(MainActivity2.this,"po"+position,Toast.LENGTH_SHORT).show();
-                position_song=position;
-                Intent intent=new Intent(MainActivity2.this, MusicService.class);
 
-                startService(intent);
-                bindService(intent,conn,BIND_AUTO_CREATE);
+              second_position=position;
+              textView.setText(musicBeanList.get(second_position).getName());
+                EventBus.getDefault().postSticky(new MyEventBus(second_position));
+                if (myBinder != null) {
+                    myBinder.playinmain();
+                }
+
 
                 if(myBinder!=null) {
                     try {
@@ -126,9 +121,24 @@ public class MainActivity2 extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 }
-                mHandler.sendEmptyMessage(OK);
 
             }
 
 
-});}}
+});}
+
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void Event(MyEventBus myEventBus) {
+
+        second_position = myEventBus.getPosition();
+        textView.setText(musicBeanList.get(second_position).getName() );
+
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
+}

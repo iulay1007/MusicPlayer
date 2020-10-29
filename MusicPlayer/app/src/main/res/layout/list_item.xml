@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
-    android:layout_height="72dp"
+    android:layout_height="wrap_content"
     android:background="@drawable/item_background"
     android:orientation="vertical">
     <LinearLayout
@@ -26,13 +26,6 @@
         android:layout_height="match_parent"
         android:text="音乐"
         android:textSize="20sp"/>
-        <ImageView
-            android:layout_centerVertical="true"
-            android:background="@drawable/ic_baseline_play_arrow_24"
-            android:layout_alignParentEnd="true"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_alignParentRight="true" />
 
     </RelativeLayout>
 
@@ -40,5 +33,5 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#D4E4F8"/>
+        android:background="#F3ACAE"/>
 </LinearLayout>

@@ -10,14 +10,20 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.example.musicplayer.EventBus.MyEventBus;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.io.IOException;
 
-import static com.example.musicplayer.Adapter.RecyclerviewAdapter.position_song;
 import static com.example.musicplayer.MainActivity.musicBeanList;
 
 public class MusicService extends Service {
     public Notification notification;
     public MediaPlayer player=new MediaPlayer();
+    private int position;
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -28,6 +34,7 @@ public class MusicService extends Service {
     public void onCreate() {
         super.onCreate();
 
+        EventBus.getDefault().register(this);
         if (player == null)
             //如果为空就new一个
                 player = new MediaPlayer();
@@ -38,7 +45,8 @@ public class MusicService extends Service {
 
 
            // player.setDataSource("/storage/emulated/0/Huawei/CloudClone/SDCardClone/音乐/에이핑크 (Apink) - U You (Korean Ver.) [mqms2].mp3");
-           player.setDataSource(musicBeanList.get(position_song).getData());
+          if(musicBeanList!=null)
+           player.setDataSource(musicBeanList.get(position).getData());
 
             //准备资源
             player.prepare();
@@ -53,7 +61,12 @@ public class MusicService extends Service {
         Log.e("服务", "准备播放音乐");
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN,sticky = true)
+    public void Event(MyEventBus myEventBus){
 
+        position=myEventBus.getPosition();
+
+    }
     public void creatNotification(){
 notification=new Notification();
 
@@ -77,8 +90,8 @@ notification=new Notification();
           //  if (!player.isPlaying()) {
                 player.pause();
                 player = new MediaPlayer();
-                player.setDataSource(musicBeanList.get(position_song).getData());
-                player.prepare();
+                player.setDataSource(musicBeanList.get(position).getData());
+             player.prepare();
 
 
               player.start();
@@ -90,12 +103,7 @@ notification=new Notification();
         }
 
         public void playinmain(){
-            position_song++;
-           // Intent intent=new Intent("action.playmusic");
-            //intent.putExtra("position",position_song);
-            //intent.setClassName(new ComponentName("com.example.musicplayer","MainActivity$BroadcastReceiverinMain"));
-            //intent.setComponent(new ComponentName("com.example.musicplayer","com.example.musicplayerB.roadcastReceiverinMain"));
-            //sendBroadcast(intent);
+
             if (player.isPlaying()) {
                 player.pause();
             } else {
@@ -105,23 +113,21 @@ notification=new Notification();
         public void playnext() throws IOException{
             player.pause();
             player=new MediaPlayer();
-            position_song++;
-            player.setDataSource(musicBeanList.get(position_song).getData());
+            position++;
+            EventBus.getDefault().postSticky(new MyEventBus(position));
+            player.setDataSource(musicBeanList.get(position).getData());
             player.prepare();
-
-
             player.start();
 
         }
         public void playprv() throws IOException{
             player.pause();
             player=new MediaPlayer();
-            if(position_song!=0)
-            position_song--;
-            player.setDataSource(musicBeanList.get(position_song).getData());
+            if(position!=0)
+            position--;
+            EventBus.getDefault().postSticky(new MyEventBus(position));
+            player.setDataSource(musicBeanList.get(position).getData());
             player.prepare();
-
-
             player.start();
 
         }
@@ -149,5 +155,11 @@ notification=new Notification();
         public void seekTo(int mesc){
             player.seekTo(mesc);
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
     }
 }
