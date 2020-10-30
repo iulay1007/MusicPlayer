@@ -3,10 +3,13 @@ package com.example.musicplayer;
 import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -51,17 +54,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private MusicService musicService;
     private MusicService.MyBinder myBinder;
     public static List<MusicBean> musicBeans = new ArrayList<>();
-
+    private IntentFilter intentFilter;
+    private IntentFilter intentFilternext;
+    private IntentFilter intentFilterprv;
     public TextView textView;
     private Button play_btn;
     private Button change_btn;
     private Button playprv_btn;
     private Button playnext_btn;
+    private Button ntf_playn_btn;
+    private Button ntf_playp_btn;
+    private Button getNtf_playn_btn;
 
     private final static int SCAN_OK = 1;
     private final static int getintent = 2;
     private int position;
     private RemoteViews remoteViews;
+    private PlayorPauseReceiver playorPauseReceiver;
+    private PlayNextReceiver playNextReceiver;
+    private PlayPrvReceiver playPrvReceiver;
 
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -71,14 +82,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initView();
+
         checkPermission();
         isNotifyEnabled(this);
         initSong();
         initPlayer();
+        intentFilter = new IntentFilter();
+        intentFilternext=new IntentFilter();
+        intentFilterprv=new IntentFilter();
+
+        intentFilter.addAction("playorPauseReceiver.broadcast.receiver");
+        intentFilternext.addAction("playNextReceiver.broadcast.receiver");
+        intentFilterprv.addAction("playPrvReceiver.broadcast.receiver");
+        playorPauseReceiver = new PlayorPauseReceiver();
+        playNextReceiver=new PlayNextReceiver();
+        playPrvReceiver=new PlayPrvReceiver();
+
+        //绑定监听
+        registerReceiver(playorPauseReceiver,intentFilter);
+        registerReceiver(playNextReceiver,intentFilternext);
+        registerReceiver(playPrvReceiver,intentFilterprv);
         showNotification();
         EventBus.getDefault().register(this);
 
     }
+
 
     private void initView() {
 
@@ -128,9 +156,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .setContentTitle("title").setContentText("Content").setChannelId(getPackageName()).
                         setPriority(NotificationCompat.PRIORITY_HIGH);
         builder.setContent(remoteViews).setSmallIcon(R.drawable.ic_baseline_favorite_24);
+            Intent intent=new Intent(this,MainActivity.class);
+        initRemoteViews();
+      ////
+        PendingIntent pendingIntent=PendingIntent.getActivity(this,0,intent,0);
+
 
 
         notificationManager.notify(1, builder.build());
+
+    }
+    private void initRemoteViews() {
+        //intentFilter = new IntentFilter();
+        //intentFilter.addAction("com.sample.test.sticky.broadcast.receiver");
+        Intent intent=new Intent("playorPauseReceiver.broadcast.receiver");
+        Intent intentnext=new Intent("playNextReceiver.broadcast.receiver");
+        Intent intentprv=new Intent("playPrvReceiver.broadcast.receiver");
+
+
+        PendingIntent pendButtonplayIntent = PendingIntent.getBroadcast(this, 0, intent,0);
+        PendingIntent pendButtonnextIntent= PendingIntent.getBroadcast(this, 1, intentnext,0);
+        PendingIntent pendButtonprvIntent= PendingIntent.getBroadcast(this, 2, intentprv,0);
+
+        // sendStickyBroadcast(intent);
+        remoteViews.setOnClickPendingIntent(R.id.ntf_play_m_btn, pendButtonplayIntent);
+        remoteViews.setOnClickPendingIntent(R.id.ntf_play_next_btn,pendButtonnextIntent);
+        remoteViews.setOnClickPendingIntent(R.id.ntf_btn_left,pendButtonprvIntent);
 
     }
 
@@ -243,6 +294,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (view.getId()) {
             //播放/暂停
             case R.id.play_btn:
+                if(!myBinder.isPlaying())
+               play_btn.setBackgroundResource(R.drawable.ic_baseline_pause_circle_outline_24);
+                else
+                    play_btn.setBackgroundResource(R.drawable.ic_baseline_play_circle_outline_24);
+
+
                 if (myBinder != null) {
                     myBinder.playinmain();
                 }
@@ -279,6 +336,45 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onDestroy();
     //注销eventbus
         EventBus.getDefault().unregister(this);
-    }
+        unregisterReceiver(playorPauseReceiver);
 
+    }
+    class PlayorPauseReceiver extends BroadcastReceiver {
+        //实现接收到广播的处理
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (myBinder != null) {
+            myBinder.playinmain();
+        }
+            Log.d(TAG,"===NetworkChangeReceiver");
+        }
+    }
+    class PlayNextReceiver extends BroadcastReceiver {
+        //实现接收到广播的处理
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (myBinder != null) {
+                try {
+                    myBinder.playnext();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            Log.d(TAG,"===NetworkChangeReceiver");
+        }
+    }
+    class PlayPrvReceiver extends BroadcastReceiver {
+        //实现接收到广播的处理
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (myBinder != null) {
+                try {
+                    myBinder.playprv();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            Log.d(TAG,"===NetworkChangeReceiver");
+        }
+    }
 }

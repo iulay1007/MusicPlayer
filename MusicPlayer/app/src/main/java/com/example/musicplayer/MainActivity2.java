@@ -68,6 +68,11 @@ public class MainActivity2 extends AppCompatActivity {
         play_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if(!myBinder.isPlaying())
+                    play_btn.setBackgroundResource(R.drawable.ic_baseline_pause_circle_outline_24);
+                else
+                    play_btn.setBackgroundResource(R.drawable.ic_baseline_play_circle_outline_24);
+
                 myBinder.playinmain();
             }
         });
@@ -105,6 +110,7 @@ public class MainActivity2 extends AppCompatActivity {
         recyclerviewAdapter.setOnItemClickListener(new RecyclerviewAdapter.ItemClickListener() {
             @Override
             public void onItemClick(int position, RecyclerviewAdapter.ViewHolder holder) {
+
 
               second_position=position;
               textView.setText(musicBeanList.get(second_position).getName());
